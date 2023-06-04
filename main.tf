@@ -3,9 +3,64 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
   tags = {
     name = "main"
+    Environment = "dev"
   }
 }
-/*resource "aws_subnet" "subnet" {
+
+#tfsec:ignore:MYCUSTOMCHECK_TAGS
+resource "aws_flow_log" "vpc_flow_log" {
+  iam_role_arn    = aws_iam_role.example.arn
+  log_destination = aws_cloudwatch_log_group.example.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
+}
+
+resource "aws_cloudwatch_log_group" "example" {
+  name = "example"
+  kms_key_id = "mykmskey"
+  tags = {
+    Environment = "dev"
+  }
+}
+
+#tfsec:ignore:MYCUSTOMCHECK_TAGS
+resource "aws_iam_role" "example" {
+  name               = "example"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["vpc-flow-logs.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+
+
+data "aws_iam_policy_document" "example" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
+    ]
+
+    resources = ["*"]
+  }
+}
+/*
+resource "aws_subnet" "subnet" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, 1)
   map_public_ip_on_launch = true

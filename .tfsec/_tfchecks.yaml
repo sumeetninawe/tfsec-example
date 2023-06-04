@@ -2,13 +2,13 @@
 checks:
 - code: MYCUSTOMCHECK_TAGS
   description: Custom check to ensure the Environment tag is applied to All resources
-  impact: By not having CostCentre we can't keep track of billing
-  resolution: Add the CostCentre tag
+  impact: By not having Environment we can't keep track of billing
+  resolution: Add the Environment tag
   requiredTypes:
   - resource
   requiredLabels:
   - aws_*
-  severity: ERROR
+  severity: CRITICAL
   matchSpec:
     name: tags
     action: contains
